@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>비트코딩 | 프로젝트</title>
+
+  <!-- 폰트: 메인 페이지와 동일 -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800&family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --navy:#040A1B; --yonsei:#335495; --blue:#668BC4;
+      --steel:#A5BECF; --paper:#FEFEFE;
+      --text:#112; --muted:#5b677a; --radius:14px; --shadow:0 10px 30px rgba(4,10,27,.08);
+      --container:1100px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family:"Noto Sans KR",system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 80% -10%, rgba(165,190,207,.25), transparent 60%),
+        linear-gradient(#fff, #f9fbfe);
+    }
+    a{color:inherit;text-decoration:none}
+    .container{max-width:var(--container);margin:0 auto;padding:0 20px}
+
+    .btn{display:inline-block;padding:.7rem 1rem;border-radius:10px;font-weight:700}
+    .btn-primary{background:var(--blue);color:white}
+    .btn-ghost{border:1px solid #dfe6ee}
+
+    /* ===== 헤더 (메인과 동일) ===== */
+    header{
+      position:sticky;top:0;z-index:50;
+      background:linear-gradient(180deg, var(--navy), #0b1730 70%);
+      color:white;border-bottom:1px solid rgba(255,255,255,.08);
+      backdrop-filter:saturate(140%) blur(6px);
+    }
+    .nav{display:flex;align-items:center;gap:24px;height:64px}
+    .brand{
+      font-family:"Inter",system-ui,sans-serif;
+      font-weight:800;letter-spacing:.3px;
+      font-size:20px;display:flex;align-items:center;gap:10px
+    }
+    .brand-badge{
+      width:28px;height:28px;border-radius:8px;
+      background:linear-gradient(135deg,var(--yonsei),var(--blue));
+      display:grid;place-items:center
+    }
+    .brand-badge span{font-weight:800;color:white}
+    nav ul{display:flex;gap:18px;margin:0 0 0 auto;padding:0;list-style:none}
+    nav a{opacity:.9;padding:8px 10px;border-radius:8px}
+    nav a:hover{background:rgba(255,255,255,.08);opacity:1}
+
+    /* ===== 프로젝트 페이지 레이아웃 ===== */
+    main{padding:40px 0 80px}
+
+    .page-header{
+      padding:20px 0 10px;
+    }
+    .page-header h1{
+      margin:0 0 6px;
+      font-size:28px;
+      font-weight:800;
+    }
+    .page-header p{
+      margin:0;
+      color:var(--muted);
+    }
+
+    .section-title{
+      font-size:22px;
+      font-weight:700;
+      margin-top:32px;
+      margin-bottom:12px;
+    }
+
+    .projects{
+      display:flex;
+      justify-content:space-around;
+      gap:24px;
+      flex-wrap:wrap;
+      margin-top:24px;
+    }
+    .project{
+      text-align:center;
+      background:var(--paper);
+      border-radius:var(--radius);
+      border:1px solid #e7eef7;
+      box-shadow:var(--shadow);
+      padding:18px 18px 20px;
+      width:260px;
+    }
+    .project img{
+      width:100%;
+      height:230px;
+      object-fit:cover;
+      border-radius:12px;
+      border:1px solid #d9e4f2;
+      display:block;
+      margin-bottom:10px;
+    }
+    .click-text a{
+      font-size:16px;
+      font-weight:700;
+      color:var(--yonsei);
+    }
+    .click-text a:hover{text-decoration:underline}
+
+    /* ===== 푸터 (메인과 동일) ===== */
+    footer{
+      margin-top:40px;color:#e6ecf6;background:var(--navy)
+    }
+    .footer-inner{padding:28px 0}
+    .footer-inner a{color:#d2ddff}
+    .copyright{
+      border-top:1px solid rgba(255,255,255,.08);
+      padding:14px 0;
+      color:#b9c6e6;font-size:14px
+    }
+
+    /* 반응형 */
+    @media (max-width: 900px){
+      .nav{height:60px}
+      nav ul{gap:10px}
+      .projects{justify-content:center}
+    }
+  </style>
+</head>
+<body>
+  <!-- 헤더 -->
+  <header>
+    <div class="container nav">
+              <a href="비트코딩.html" class="brand" aria-label="홈으로">
+      <div class="brand-badge"><span>B</span></div>
+      <span>BITCODING</span>
+    </a>
+
+
+      <nav>
+        <ul>
+          <li><a href="#community">커뮤니티</a></li>
+          <li><a href="#members">동아리원</a></li>
+          <li><a href="project.html">프로젝트</a></li> <!-- 현재 페이지 -->
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 메인 콘텐츠 -->
+  <main>
+    <div class="container">
+      <div class="page-header">
+        <h1>동아리 프로젝트</h1>
+        <p>비트코딩 동아리원들이 만든 결과물 모음입니다.</p>
+      </div>
+
+      <div class="section-title">프로젝트 결과물</div>
+
+      <!-- 네가 준 코드 구조 그대로 사용 -->
+      <div class="projects">
+        <div class="project">
+          <img src="수학 인공지능 모델.png" alt="수학 인공지능 모델">
+          <div class="click-text"><a href="math.html">수학 인공지능 모델</a></div>
+        </div>
+
+        <div class="project">
+          <img src="물리학 게임.jpg" alt="물리학 게임">
+          <div class="click-text"><a href="physics.Ahtml">물리학 게임</a></div>
+        </div>
+
+        <div class="project">
+          <img src="욕설 검열.png" alt="비속어 필터기">
+          <div class="click-text"><a href="filter.html">비속어 필터기</a></div>
+        </div>
+      </div>
+
+      <div class="projects">
+        <div class="project">
+          <img src="AI 프롬프터 생성기.png" alt="AI 프롬프터 생성기">
+          <div class="click-text"><a href="A.html">AI 프롬프터 생성기</a></div>
+        </div>
+
+        <div class="project">
+          <img src="대학추천 사이트.jpg" alt="대학추천 사이트">
+          <div class="click-text"><a href="대학.html">대학추천 사이트</a></div>
+        </div>
+
+        <div class="project">
+          <img src="웹 개발 프로그램.png" alt="웹 개발 학습 플랫폼">
+          <div class="click-text"><a href="웹개발.html">웹 개발 학습 플랫폼</a></div>
+        </div>
+      </div>
+
+      
+    </div>
+  </main>
+
+  <!-- 푸터 -->
+  <footer id="contact">
+    <div class="container footer-inner">
+      <p><strong>문의</strong> : 010-1234-5678 · <a href="mailto:abcd@naver.com">abcd@naver.com</a></p>
+      <p><strong>장소</strong> : 거창대성고 3층 컴퓨터실</p>
+    </div>
+    <div class="container copyright">
+      <small>Copyright © 2024–2025 비트코딩. All rights reserved.</small>
+    </div>
+  </footer>
+</body>
+</html>

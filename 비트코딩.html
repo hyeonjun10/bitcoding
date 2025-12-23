@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>비트코딩 | 거창대성고 코딩 동아리</title>
+<!-- 폰트: 본문 Noto Sans KR, 포인트 Inter(브랜드) -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800&family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+--navy:#040A1B; --yonsei:#335495; --blue:#668BC4;
+--steel:#A5BECF; --paper:#FEFEFE;
+--text:#112; --muted:#5b677a; --radius:14px; --shadow:0 10px 30px rgba(4,10,27,.08);
+--container:1100px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+font-family:"Noto Sans KR",system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,sans-serif;
+color:var(--text);
+background:
+radial-gradient(1200px 600px at 80% -10%, rgba(165,190,207,.25), transparent 60%),
+linear-gradient(#fff, #f9fbfe);
+}
+a{color:inherit;text-decoration:none}
+.container{max-width:var(--container);margin:0 auto;padding:0 20px}
+.btn{display:inline-block;padding:.7rem 1rem;border-radius:10px;font-weight:700}
+.btn-primary{background:var(--blue);color:white}
+.btn-ghost{border:1px solid #dfe6ee}
+/* 헤더 */
+header{
+position:sticky;top:0;z-index:50;
+background:linear-gradient(180deg, var(--navy), #0b1730 70%);
+color:white;border-bottom:1px solid rgba(255,255,255,.08);
+backdrop-filter:saturate(140%) blur(6px);
+}
+.nav{display:flex;align-items:center;gap:24px;height:64px}
+.brand{
+font-family:"Inter",system-ui,sans-serif;font-weight:800;letter-spacing:.3px;
+font-size:20px;display:flex;align-items:center;gap:10px
+}
+.brand-badge{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--yonsei),var(--blue));display:grid;place-items:center}
+.brand-badge span{font-weight:800;color:white}
+nav ul{display:flex;gap:18px;margin:0 0 0 auto;padding:0;list-style:none}
+nav a{opacity:.9;padding:8px 10px;border-radius:8px}
+nav a:hover{background:rgba(255,255,255,.08);opacity:1}
+/* 히어로(단체사진) */
+.hero{position:relative}
+.hero .wrap{display:grid;grid-template-columns:0.9fr 1.1fr;gap:36px;align-items:center;padding:60px 0}
+.hero h1{font-weight:800;line-height:1.15;margin:0 0 14px}
+.hero p{color:#556173;margin:0 0 22px}
+.hero-img{
+aspect-ratio:16/9;border-radius:var(--radius);
+background:linear-gradient(120deg, var(--yonsei), var(--blue));
+box-shadow:var(--shadow);overflow:hidden;border:1px solid #e9eff7
+}
+.hero-img img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(105%) contrast(102%)}
+/* 앨범 + 공지 카드 */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.card{
+background:var(--paper);border:1px solid #e7eef7;border-radius:var(--radius);
+box-shadow:var(--shadow);overflow:hidden
+}
+.card h3{margin:18px 18px 8px}
+.card .body{padding:0 18px 18px}
+.thumb{aspect-ratio:16/9;background:linear-gradient(180deg,#dfe8f3,#f6f9ff);display:grid;place-items:center}
+.thumb img{
+  width:100%;
+  height:100%;
+  object-fit:cover;  /* 비율 유지하면서 꽉 채우기 */
+  display:block;
+}
+.notice li{padding:12px 0;border-bottom:1px dashed #e2e8f0}
+.notice small{color:var(--muted)}
+/* 활동 섹션 */
+section{padding:56px 0}
+.section-header{display:flex;justify-content:space-between;align-items:end;margin-bottom:18px}
+.section-title{font-size:22px;font-weight:800;border-left:6px solid var(--yonsei);padding-left:10px}
+.activity{
+background:linear-gradient(180deg, rgba(165,190,207,.35), rgba(255,255,255,.6));
+border:1px solid #e3edf6;border-radius:var(--radius);box-shadow:var(--shadow);
+display:grid;grid-template-columns:1.1fr .9fr;gap:20px;padding:18px
+}
+.activity .ph{aspect-ratio:16/9;border-radius:12px;
+    overflow:hidden;
+    background:linear-gradient(135deg,#eef4fb,#d7e5f2)}
+.activity .ph img{
+  width:100%;
+  height:100%;
+  object-fit:cover;                  /* 비율 유지하면서 꽉 채우기 */
+  display:block;
+}
+.activity p{margin:0;color:#4b586c}
+/* 외부활동 카드 */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.ext{background:white;border:1px solid #e7eef7;border-radius:var(--radius);box-shadow:var(--shadow);padding:26px;text-align:center}
+.ext h4{margin:0 0 8px;color:var(--yonsei)}
+/* 푸터 */
+footer{
+margin-top:60px;color:#e6ecf6;background:var(--navy)
+}
+.footer-inner{padding:28px 0}
+.footer-inner a{color:#d2ddff}
+.copyright{border-top:1px solid rgba(255,255,255,.08);padding:14px 0;color:#b9c6e6;font-size:14px}
+/* 반응형 */
+@media (max-width: 900px){
+.hero .wrap{grid-template-columns:1fr}
+.grid,.two,.activity{grid-template-columns:1fr}
+}
+/* ===== 상단 네비 드롭다운 (비트코딩 톤) ===== */
+nav li{
+  position:relative;             /* 드롭다운 위치 기준 */
+}
+
+/* 서브메뉴 기본은 숨김 */
+.nav-dropdown{
+  position:absolute;
+  top:100%;                      /* 메뉴 바로 아래 */
+  left:0;
+  background:var(--paper);
+  color:var(--text);
+  border:1px solid var(--yonsei);
+  border-radius:10px;
+  padding:6px 0;
+  min-width:180px;
+  display:none;                  /* hover 할 때만 보이게 */
+  flex-direction:column;
+  box-shadow:var(--shadow);
+  z-index:100;
+}
+
+.nav-dropdown a{
+  display:block;
+  padding:8px 14px;
+  font-size:14px;
+  white-space:nowrap;
+  color:var(--text);
+}
+
+.nav-dropdown a:hover{
+  background:rgba(51,84,149,0.06);   /* 연한 연세 블루 */
+  color:var(--yonsei);
+}
+
+/* '프로젝트'에 마우스를 올렸을 때 드롭다운 보이기 */
+.nav-item-project:hover .nav-dropdown{
+  display:flex;
+}
+</style>
+</head>
+<body>
+<!-- 헤더 -->
+<header>
+<div class="container nav">
+    <a href="비트코딩.html" class="brand" aria-label="홈으로">
+      <div class="brand-badge"><span>B</span></div>
+      <span>BITCODING</span>
+    </a>
+
+<nav>
+<ul>
+<li><a href="#community">커뮤니티</a></li>
+<li><a href="#members">동아리원</a></li>
+<li class="nav-item-project">
+      <a href="project.html">프로젝트</a>
+      <div class="nav-dropdown">
+        <a href="math.html">수학 인공지능 모델</a>
+        <a href="physics.html">물리학 게임</a>
+        <a href="filter.html">비속어 필터기</a>
+        <a href="prompt.html">AI 프롬프터 생성기</a>
+      </div>
+    </li>
+</ul>
+</nav>
+</div>
+</header>
+
+<main id="top">
+<!-- 히어로: 동아리 단체사진 -->
+<section class="hero">
+<div class="container wrap">
+<div>
+<h1>거창대성고 코딩 동아리 <span style="color:var(--blue)">비트코딩</span></h1>
+<p>문제를 발견하고, 데이터를 분석하고, 모두 함께 해결합니다. 코딩을 통해 세상과 소통하는 동아리, 비트코딩에 오신 여러분을 환영합니다.</p>
+<a class="btn btn-primary" href="#projects">프로젝트 보기</a>
+</div>
+<div class="hero-img" aria-label="단체사진 자리">
+<!-- 실제 사진으로 교체 -->
+<img src="단체사진.png" alt="비트코딩 단체사진" />
+</div>
+</div>
+</section>
+
+<!-- 앨범 + 공지 -->
+<section>
+<div class="container grid">
+<!-- 앨범 카드 -->
+<article class="card">
+<h3>동아리 앨범</h3>
+<div class="thumb"> <img src="앨범 썸네일.jpg" alt="동아리 앨범"></div>
+<div class="body">
+<p class="muted">최근 활동 사진을 확인하세요.</p>
+<a class="btn btn-primary" href="album.html">앨범 전체보기</a>
+</div>
+</article>
+<!-- 공지 카드 -->
+<aside class="card">
+<h3>공지사항</h3>
+<div class="body">
+<ul class="notice">
+<li><strong>[모집]</strong> 2025 동계 해커톤 운영진 지원 <br><small>2025-01-10</small></li>
+<li><strong>[활동]</strong> 딜리메일 워크숍 2기 오픈 <br><small>2024-12-15</small></li>
+<li><strong>[안내]</strong> 레인서버 신규 계정 신청 <br><small>상시</small></li>
+</ul>
+</div>
+</aside>
+</div>
+</section>
+
+<!-- 활동① 딜리메일 -->
+<section id="projects">
+<div class="container">
+<div class="section-header">
+<h2 class="section-title">활동① 딜리메일</h2>
+<a class="btn btn-ghost" href="#">자세히</a>
+</div>
+<div class="activity">
+<div class="ph">
+    <img src="딜리메일.png" alt="딜리메일">
+</div>
+<div>
+<h3>온실가스 감축하는 이메일 제거기</h3>
+<p>쉽고 간편한 구조를 통해 사용자들이 현실적인 방법으로 온실가스 배출량을 줄일 수 있는 이메일 제거 프로그램입니다.</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- 활동② 레인서버 -->
+<section>
+<div class="container">
+<div class="section-header">
+<h2 class="section-title">활동② 레인서버</h2>
+<a class="btn btn-ghost" href="#">자세히</a>
+</div>
+<div class="activity">
+<div class="ph" aria-label="활동 사진 자리"></div>
+<div>
+<h3>학교 전산실용 개인 서버</h3>
+<p>Docker로 개발 환경 표준화, 간단한 웹서비스를 PaaS처럼 호스팅. 계정 발급 및 사용 가이드를 운영합니다.</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- 외부활동(RNE, 대중 멘토링) -->
+<section>
+<div class="container">
+<div class="section-header">
+<h2 class="section-title">외부활동</h2>
+</div>
+<div class="two">
+<div class="ext">
+<h4>RNE</h4>
+<p>지역 네트워킹 & 발표 모임. 프로젝트 공유·피드백.</p>
+</div>
+<div class="ext">
+<h4><a href="mentoring.html">대중 멘토링</a></h4>
+<p>중학생·타학교 대상 코딩 멘토링 및 체험 수업.</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+
+<!-- 푸터 -->
+<footer id="contact">
+<div class="container footer-inner">
+<p><strong>문의</strong> : 010-1234-5678 · <a href="mailto:imhyeonjun10@gmail.com">abcd@naver.com</a></p>
+<p><strong>장소</strong> : 거창대성고 3층 컴퓨터실</p>
+</div>
+<div class="container copyright">
+<small>Copyright © 2024–2025 비트코딩. All rights reserved.</small>
+</div>
+</footer>
+</body>
+</html>

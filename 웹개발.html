@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>웹 개발 학습 플랫폼 | 비트코딩</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- 메인과 동일 폰트 -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800&family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --navy:#040A1B; --yonsei:#335495; --blue:#668BC4;
+      --steel:#A5BECF; --paper:#FEFEFE;
+      --text:#112; --muted:#5b677a; --radius:14px; --shadow:0 10px 30px rgba(4,10,27,.08);
+      --container:1100px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family:"Noto Sans KR",system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 80% -10%, rgba(165,190,207,.25), transparent 60%),
+        linear-gradient(#fff, #f9fbfe);
+    }
+    a{color:inherit;text-decoration:none}
+    .container{max-width:var(--container);margin:0 auto;padding:0 20px}
+
+    /* ===== 헤더 (공통) ===== */
+    header{
+      position:sticky;top:0;z-index:50;
+      background:linear-gradient(180deg, var(--navy), #0b1730 70%);
+      color:white;border-bottom:1px solid rgba(255,255,255,.08);
+      backdrop-filter:saturate(140%) blur(6px);
+    }
+    .nav{display:flex;align-items:center;gap:24px;height:64px}
+    .brand{
+      font-family:"Inter",system-ui,sans-serif;
+      font-weight:800;letter-spacing:.3px;
+      font-size:20px;display:flex;align-items:center;gap:10px
+    }
+    .brand-badge{
+      width:28px;height:28px;border-radius:8px;
+      background:linear-gradient(135deg,var(--yonsei),var(--blue));
+      display:grid;place-items:center
+    }
+    .brand-badge span{font-weight:800;color:white}
+    nav ul{display:flex;gap:18px;margin:0 0 0 auto;padding:0;list-style:none}
+    nav a{opacity:.9;padding:8px 10px;border-radius:8px}
+    nav a:hover{background:rgba(255,255,255,.08);opacity:1}
+
+    /* ===== 페이지 공통 ===== */
+    main{padding:40px 0 80px}
+    .page-header{
+      padding:10px 0 20px;
+    }
+    .page-header h1{
+      margin:0 0 6px;
+      font-size:28px;
+      font-weight:800;
+    }
+    .page-header p{
+      margin:0;
+      color:var(--muted);
+    }
+
+    .section-title{
+      font-size:22px;
+      font-weight:700;
+      margin:24px 0 12px;
+    }
+
+    /* ===== 이미지 영역 ===== */
+    .images{
+      display:grid;
+      grid-template-columns:repeat(2, 250px);
+      gap:30px;
+      justify-content:center;
+      margin-top:20px;
+    }
+    .images img{
+      width:250px;
+      height:250px;
+      border:2px solid #000;
+      object-fit:cover;
+      border-radius:12px;
+      background:#fff;
+    }
+
+    /* ===== 텍스트 설명 ===== */
+    .text-section{
+      margin:40px 10px 0;
+      font-size:18px;
+      line-height:1.8;
+      background:rgba(255,255,255,0.9);
+      border-radius:16px;
+      padding:22px 20px;
+      border:1px solid #e2e8f0;
+      box-shadow:var(--shadow);
+    }
+    .text-section p{margin:0 0 16px}
+    .text-section strong{color:var(--yonsei)}
+
+    /* ===== 푸터 (공통) ===== */
+    footer{
+      margin-top:40px;color:#e6ecf6;background:var(--navy)
+    }
+    .footer-inner{padding:28px 0}
+    .footer-inner a{color:#d2ddff}
+    .copyright{
+      border-top:1px solid rgba(255,255,255,.08);
+      padding:14px 0;
+      color:#b9c6e6;font-size:14px
+    }
+
+    /* 반응형 */
+    @media (max-width: 700px){
+      .images{
+        grid-template-columns:1fr;
+      }
+      .images img{
+        width:100%;
+        max-width:280px;
+        margin:0 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 헤더 -->
+  <header>
+    <div class="container nav">
+              <a href="비트코딩.html" class="brand" aria-label="홈으로">
+      <div class="brand-badge"><span>B</span></div>
+      <span>BITCODING</span>
+    </a>
+
+
+      <nav>
+        <ul>
+          <li><a href="index.html#community">커뮤니티</a></li>
+          <li><a href="index.html#members">동아리원</a></li>
+          <li><a href="project.html">프로젝트</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 메인 콘텐츠 -->
+  <main>
+    <div class="container">
+      <div class="page-header">
+        <h1>웹 개발 학습 플랫폼</h1>
+        <p>비트코딩 동아리의 웹 개발 학습 플랫폼 프로젝트 소개 페이지입니다.</p>
+      </div>
+
+      <h2 class="section-title">프로젝트 코드</h2>
+      <div class="images">
+        <img src="웹개발1.png" >
+        <img src="웹개발2.png" >
+        <img src="웹개발3.png" >
+        <img src="웹개발4.png" >
+      </div>
+
+      <h2 class="section-title">프로젝트 설명</h2>
+      <div class="text-section">
+        <p><strong>창작 배경 :</strong> html, css java를 사용하여 웹 페이지를 처음 만들 때 겪는정보 선별의 어려움을 해소하기
+위해 기초 예제와 퀴즈를 넣은 웹페이지를 만들고자 계획하였다.</p>
+        <p><strong>내용 :</strong> 웹 페이지는 html과 css로 기본 구조와 디자인을 구성하였고, java를 활용하여 동적인 퀴즈 기능을 구현하였다. 또한 각각의 기본 예제를 구현하고 실행 결과를 확인하는 기능을 추가함으로써 사용자가 학습 내용을 직접 체험하고 이해도를 높일 수 있도록 하였다.</p>
+        <p><strong>결과 :</strong> 이 프로젝트를 통해 웰 개발의 기본 기술을 실제 구현해보는 경험을 쌓을 수 있었으며, 프로그래밍을 학습하는 입장에서도
+내용의 반복적인 확인과 프로그래밍의 기초를 습득할 수 있는 좋은 자료가 되었다고 생각한다.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- 푸터 -->
+  <footer id="contact">
+    <div class="container footer-inner">
+      <p><strong>문의</strong> : 010-1234-5678 · <a href="mailto:abcd@naver.com">abcd@naver.com</a></p>
+      <p><strong>장소</strong> : 거창대성고 3층 컴퓨터실</p>
+    </div>
+    <div class="container copyright">
+      <small>Copyright © 2024–2025 비트코딩. All rights reserved.</small>
+    </div>
+  </footer>

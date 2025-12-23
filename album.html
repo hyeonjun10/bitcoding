@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>비트코딩 | 동아리 앨범</title>
+
+  <!-- 메인과 동일 폰트 -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800&family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --navy:#040A1B; --yonsei:#335495; --blue:#668BC4;
+      --steel:#A5BECF; --paper:#FEFEFE;
+      --text:#112; --muted:#5b677a; --radius:14px; --shadow:0 10px 30px rgba(4,10,27,.08);
+      --container:1100px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family:"Noto Sans KR",system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 80% -10%, rgba(165,190,207,.25), transparent 60%),
+        linear-gradient(#fff, #f9fbfe);
+    }
+    a{color:inherit;text-decoration:none}
+    .container{max-width:var(--container);margin:0 auto;padding:0 20px}
+
+    /* ===== 헤더 (공통) ===== */
+    header{
+      position:sticky;top:0;z-index:50;
+      background:linear-gradient(180deg, var(--navy), #0b1730 70%);
+      color:white;border-bottom:1px solid rgba(255,255,255,.08);
+      backdrop-filter:saturate(140%) blur(6px);
+    }
+    .nav{display:flex;align-items:center;gap:24px;height:64px}
+    .brand{
+      font-family:"Inter",system-ui,sans-serif;
+      font-weight:800;letter-spacing:.3px;
+      font-size:20px;display:flex;align-items:center;gap:10px
+    }
+    .brand-badge{
+      width:28px;height:28px;border-radius:8px;
+      background:linear-gradient(135deg,var(--yonsei),var(--blue));
+      display:grid;place-items:center
+    }
+    .brand-badge span{font-weight:800;color:white}
+    nav ul{display:flex;gap:18px;margin:0 0 0 auto;padding:0;list-style:none}
+    nav a{opacity:.9;padding:8px 10px;border-radius:8px}
+    nav a:hover{background:rgba(255,255,255,.08);opacity:1}
+
+    /* ===== 페이지 레이아웃 ===== */
+    main{padding:40px 0 80px}
+    .page-header{
+      padding:10px 0 20px;
+    }
+    .page-header h1{
+      margin:0 0 8px;
+      font-size:28px;
+      font-weight:800;
+    }
+    .page-header p{
+      margin:0;
+      color:var(--muted);
+    }
+
+    .album-toolbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin:4px 0 14px;
+      font-size:14px;
+      color:var(--muted);
+    }
+
+    /* ===== 앨범 그리드 (무한 추가 가능) ===== */
+    .album-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+      gap:18px;
+      margin-top:18px;
+    }
+
+    .album-item{
+      background:var(--paper);
+      border-radius:var(--radius);
+      border:1px solid #e2e8f0;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .album-item img{
+      width:100%;
+      height:200px;
+      object-fit:cover;
+      display:block;
+    }
+    .album-meta{
+      padding:10px 12px 12px;
+      font-size:13px;
+      color:var(--muted);
+    }
+    .album-meta strong{
+      display:block;
+      margin-bottom:2px;
+      color:var(--text);
+      font-size:14px;
+    }
+
+    /* ===== 푸터 (공통) ===== */
+    footer{
+      margin-top:40px;color:#e6ecf6;background:var(--navy)
+    }
+    .footer-inner{padding:28px 0}
+    .footer-inner a{color:#d2ddff}
+    .copyright{
+      border-top:1px solid rgba(255,255,255,.08);
+      padding:14px 0;
+      color:#b9c6e6;font-size:14px
+    }
+
+    /* 반응형 */
+    @media (max-width: 700px){
+      .album-toolbar{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 헤더 -->
+  <header>
+    <div class="container nav">
+              <a href="비트코딩.html" class="brand" aria-label="홈으로">
+      <div class="brand-badge"><span>B</span></div>
+      <span>BITCODING</span>
+    </a>
+
+
+      <nav>
+        <ul>
+          <li><a href="비트코딩.html#community">커뮤니티</a></li>
+          <li><a href="index.html#members">동아리원</a></li>
+          <li><a href="project.html">프로젝트</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 메인 콘텐츠 -->
+  <main>
+    <div class="container">
+      <div class="page-header">
+        <h1>동아리 앨범</h1>
+        <p>비트코딩 활동 사진을 모아 두는 공간입니다.</p>
+      </div>
+
+      
+
+      <!-- ✅ 여기 안에 <figure class="album-item">를 계속 추가하면 사진 무한대로 첨부 가능 -->
+      <div class="album-grid">
+
+        <!-- 예시 1 -->
+        <figure class="album-item">
+          <img src="20251105_112746.jpg" alt="비트코딩 활동 사진 1">
+          <figcaption class="album-meta">
+            <strong>2025.11.05</strong>
+            
+          </figcaption>
+        </figure>
+
+        <!-- 예시 2 -->
+        <figure class="album-item">
+          <img src="스크린샷 2025-10-29 114230.png" alt="비트코딩 활동 사진">
+          <figcaption class="album-meta">
+            <strong>데이터 크리에이터 캠프 결과</strong>
+            2025.10.29
+          </figcaption>
+        </figure>
+
+        <!-- 예시 3 -->
+        <figure class="album-item">
+          <img src="20251029_111417.jpg" alt="비트코딩 활동 사진">
+          <figcaption class="album-meta">
+            <strong>2025.10.29</strong>
+            
+          </figcaption>
+        </figure>
+
+        <!-- 예시 4 -->
+        <figure class="album-item">
+          <img src="20250614_110651.jpg" alt="비트코딩 활동 사진">
+          <figcaption class="album-meta">
+            <strong>외부활동 모음</strong>
+            2025.7.13 
+          </figcaption>
+        </figure>
+
+        <!-- 📌 이 아래로 똑같은 형식으로 계속 복붙해서 사진을 무한히 추가하면 됨 -->
+        <!--
+        <figure class="album-item">
+          <img src="images/여기에-파일이름.png" alt="설명 텍스트">
+          <figcaption class="album-meta">
+            <strong>사진 제목</strong>
+            날짜 · 한 줄 설명
+          </figcaption>
+        </figure>
+        -->
+
+      </div>
+    </div>
+  </main>
+
+  <!-- 푸터 -->
+  <footer id="contact">
+    <div class="container footer-inner">
+      <p><strong>문의</strong> : 010-1234-5678 · <a href="mailto:abcd@naver.com">abcd@naver.com</a></p>
+      <p><strong>장소</strong> : 거창대성고 3층 컴퓨터실</p>
+    </div>
+    <div class="container copyright">
+      <small>Copyright © 2024–2025 비트코딩. All rights reserved.</small>
+    </div>
+  </footer>
+</body>
+</html>
