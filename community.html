@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>단일 파일 게시판 시스템</title>
+    <!-- Tailwind CSS CDN 로드 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 'Inter' 폰트 설정 및 기본 스타일 */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f9;
+        }
+        /* 고정 헤더 스타일 */
+        #header-container {
+            height: 80px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        /* 메인 컨텐츠 영역에 헤더 높이만큼 패딩 추가 */
+        #app-wrapper {
+            padding-top: 80px;
+            padding-bottom: 80px; /* 하단 고정 버튼을 위한 공간 확보 */
+            min-height: 100vh;
+        }
+        /* 게시판 테이블 스타일링 */
+        .board-row:hover {
+            background-color: #eef1f4;
+            cursor: pointer;
+        }
+        /* 하단 고정 액션 버튼 컨테이너 */
+        #fixed-bottom-actions {
+            height: 70px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 고정 헤더 컨테이너 -->
+    <div id="header-container" class="fixed top-0 left-0 w-full bg-white z-50">
+        <!-- 헤더 내용은 JavaScript에서 렌더링됩니다. -->
+    </div>
+
+    <!-- 메인 애플리케이션 컨텐츠 영역 (템플릿에 맞춘 최대 너비 설정) -->
+    <div id="app-wrapper" class="p-4 sm:p-6 transition-all">
+        <!-- 콘텐츠가 중앙에 위치하도록 최대 너비를 지정 -->
+        <div id="app" class="mx-auto max-w-6xl"> 
+            <!-- 뷰(게시판, 상세, 작성, 로그인, 회원가입)가 여기에 렌더링됩니다. -->
+            <div class="text-center py-10 text-gray-500">
+                <svg class="animate-spin h-5 w-5 mr-3 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p>인증 및 데이터 준비 중...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 하단 고정 액션 버튼 (게시판/글 작성 뷰에서 사용) -->
+    <div id="fixed-bottom-actions" class="fixed bottom-0 left-0 w-full bg-white z-40 flex items-center justify-center hidden">
+        <!-- 버튼이 여기에 동적으로 렌더링됩니다. -->
+    </div>
+
+    <!-- 커스텀 메시지 모달 (alert/confirm 대체) -->
+    <div id="message-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 hidden items-center justify-center z-[100]">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm m-4 transform transition-all scale-100">
+            <h3 id="modal-title" class="text-xl font-bold mb-4 text-gray-800">알림</h3>
+            <p id="modal-content" class="mb-6 text-gray-600"></p>
+            <div id="modal-actions" class="flex justify-end space-x-3">
+                <button id="modal-cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition hidden">취소</button>
+                <button id="modal-confirm-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK 로드 및 메인 스크립트 -->
+    <script type="module">
+        // Firebase SDK 모듈 임포트
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, orderBy, limit, addDoc, getDoc, where, getDocs, serverTimestamp} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firestore 디버그 로깅 활성화
+        setLogLevel('Debug');
+
+        // --- Firebase 설정 영역 (개인 코드 입력 위치) ---
+        // 이 플랫폼에서 실행할 때는 아래 코드를 그대로 두세요.
+        
+        const appId = 'YOUR_APP_ID'; // 프로젝트 ID 또는 임의의 문자열
+        const firebaseConfig = {
+            apiKey: "AIzaSyBk3K9vbKRFq8ZECsR-rwwFvLY-c9eU3sI",
+            authDomain: "bitcoding-82f24.firebaseapp.com",
+            projectId: "bitcoding-82f24",
+            messagingSenderId: "742954909023",
+            appId: "1:742954909023:web:b34f126d7f33db1286caea",
+            measurementId: "G-8M2ML0TX6M"
+          // authDomain이 누락되면 'auth/configuration-not-found' 오류가 발생합니다.
+        };
+        // --- Firebase 설정 영역 끝 ---
+
+
+        // Firebase 초기화
+        let app, db, auth;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+        } catch (error) {
+            console.error("Firebase 초기화 실패:", error);
+            document.getElementById('app').innerHTML = `<div class="text-red-600 p-8 text-center bg-red-100 rounded-lg">Firebase 초기화 중 오류가 발생했습니다. 콘솔을 확인해주세요.</div>`;
+        }
+
+        // --- 애플리케이션 상태 관리 ---
+        let userId = null;
+        let userName = '로그인 필요';
+        let currentView = 'login'; // 초기 뷰를 'login'으로 변경
+        let currentPostId = null;
+        let posts = [];
+        let isAuthReady = false;
+        let postsListenerUnsubscribe = null; // 리스너 구독 해지 함수를 저장할 변수
+
+        const POSTS_COLLECTION_PATH = `artifacts/${appId}/public/data/posts`;
+        // 사용자 이름/UID 매핑을 위한 컬렉션 (다른 사용자의 작성자 이름 표시를 위함)
+        const USERS_METADATA_PATH = `artifacts/${appId}/public/data/userMetadata`;
+        
+        const USERS_COLLECTION_PATH = 'users'; // Firestore 컬렉션 이름 가정
+
+        const isUsernameUnique = async (username) => {
+            // 사용자 이름으로 쿼리하여 일치하는 문서가 있는지 확인
+            const q = query(collection(db, USERS_COLLECTION_PATH), where("username", "==", username));
+            const querySnapshot = await getDocs(q);
+            // 문서가 비어있으면 (중복이 없으면) true 반환
+            return querySnapshot.empty;
+        };
+        // --- 유틸리티 함수 ---
+
+        const formatDate = (timestamp) => {
+            if (!timestamp) return '날짜 없음';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            const hh = String(date.getHours()).padStart(2, '0');
+            const mi = String(date.getMinutes()).padStart(2, '0');
+            const ss = String(date.getSeconds()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+        };
+
+        const showMessage = (title, content, isConfirm = false) => {
+            return new Promise(resolve => {
+                const modal = document.getElementById('message-modal');
+                document.getElementById('modal-title').textContent = title;
+                document.getElementById('modal-content').innerHTML = content;
+                const confirmBtn = document.getElementById('modal-confirm-btn');
+                const cancelBtn = document.getElementById('modal-cancel-btn');
+
+                confirmBtn.onclick = null;
+                cancelBtn.onclick = null;
+
+                if (isConfirm) {
+                    cancelBtn.classList.remove('hidden');
+                    confirmBtn.textContent = '확인';
+                    confirmBtn.onclick = () => { modal.classList.add('hidden'); resolve(true); };
+                    cancelBtn.onclick = () => { modal.classList.add('hidden'); resolve(false); };
+                } else {
+                    cancelBtn.classList.add('hidden');
+                    confirmBtn.textContent = '닫기';
+                    confirmBtn.onclick = () => { modal.classList.add('hidden'); resolve(true); };
+                }
+                modal.classList.remove('hidden');
+            });
+        };
+
+        // --- 인증 및 사용자 관리 ---
+
+        /**
+         * 사용자 메타데이터를 Firestore에 저장합니다.
+         */
+        const saveUserMetadata = async (uid, username) => {
+            try {
+                await setDoc(doc(db, USERS_METADATA_PATH, uid), {
+                    username: username,
+                    email: auth.currentUser.email,
+                    registeredAt: new Date()
+                }, { merge: true });
+            } catch (error) {
+                console.error("사용자 메타데이터 저장 실패:", error);
+                showMessage("오류", "사용자 정보 저장에 실패했습니다.");
+            }
+        };
+
+        /**
+         * 사용자 UID를 기반으로 이름을 가져옵니다.
+         */
+         const fetchUserNameByUid = async (uid) => {
+            if (!uid) return '익명 (UID 없음)'; // 안전 장치
+
+            try {
+                const userDoc = await getDoc(doc(db, USERS_COLLECTION_PATH, uid));
+                
+                if (userDoc.exists()) {
+                    // [핵심] userDoc.data()에서 'username' 필드를 가져오는지 확인
+                    const userData = userDoc.data();
+                    if (userData.username) {
+                        return userData.username;
+                    } else {
+                        // username 필드가 없는 경우 (구 버전 사용자)
+                        console.warn(`User document for UID ${uid} is missing the 'username' field.`);
+                        return '이름 없음';
+                    }
+                }
+                
+                // 문서가 아예 존재하지 않는 경우 (탈퇴 회원)
+                return '이름 없음';
+
+            } catch (error) {
+                // 네트워크 오류나 권한 오류가 발생할 경우
+                console.error(`Error fetching username for UID ${uid}:`, error);
+                // 권한 문제가 아니라는 가정 하에 '익명' 대신 오류 표시
+                return '익명 (로드 오류)'; 
+            }
+        };
+        
+        // --- 데이터 리스너 관리 함수 ---
+
+        /**
+         * 데이터 리스너 설정 및 구독 해지 함수 반환
+         */
+        const setupPostsListener = () => {
+            if (!db) return () => {};
+            const q = query(collection(db, POSTS_COLLECTION_PATH), orderBy('updatedAt', 'desc'));
+
+            return onSnapshot(q, async (snapshot) => {
+                // [핵심 수정 1] 비동기 처리 전체를 try...catch로 감싸서 안정성을 확보합니다.
+                try { 
+                    const newPosts = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+
+                    // 작성자 이름 매핑 로직 (UID -> 사용자 이름)
+                    const authorIds = new Set(newPosts.map(p => p.authorId).filter(id => id));
+                    const authorNameMap = {};
+                    
+                    // [개선] Promise.all을 사용하여 병렬 처리 (선택 사항, 성능 향상)
+                    const namePromises = Array.from(authorIds).map(uid => fetchUserNameByUid(uid));
+                    const fetchedNames = await Promise.all(namePromises);
+                    
+                    Array.from(authorIds).forEach((uid, index) => {
+                        // fetchUserNameByUid가 null이나 undefined 대신 문자열을 반환해야 합니다.
+                        // 만약 fetchedNames[index]가 falsy(null, undefined)라면 '익명'을 사용합니다.
+                        authorNameMap[uid] = fetchedNames[index] || '익명';
+                    });
+
+                    posts = newPosts.map(post => ({
+                        ...post,
+                        // post.authorId에 해당하는 authorNameMap의 값이 없다면 '익명'을 사용합니다.
+                        authorName: authorNameMap[post.authorId] || '익명', 
+                    }));
+
+                    if (currentView === 'board' || (currentView === 'detail' && currentPostId)) {
+                        renderApp();
+                    }
+
+                } catch (innerError) {
+                    // [핵심 수정 2] 작성자 이름 로드 중 오류가 발생했더라도 게시글 목록 자체는 렌더링합니다.
+                    console.error("게시글 처리 중 내부 오류 발생 (작성자 이름 로드):", innerError);
+                    
+                    // 이름 로드에 실패했더라도, 게시글 목록은 불러온 데이터로 채우고 작성자 이름은 '익명'으로 처리
+                    posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), authorName: '익명' }));
+                    
+                    renderApp();
+                    // 사용자에게 오류 메시지를 보여줄 수도 있습니다.
+                    // showMessage("게시글 로드 오류", "작성자 정보를 불러오는 데 실패했습니다.");
+                }
+                
+            }, (outerError) => {
+                // ... 기존 onSnapshot 외부 오류 처리 (권한 오류 등)
+                console.error("게시글 목록 로드 실패:", outerError);
+                if (outerError.code === 'permission-denied') {
+                    console.log("Permission denied for post list. User is likely not authenticated.");
+                    // posts = []; 이 줄이 제거된 상태를 유지하세요.
+                    renderApp();
+                } else {
+                    showMessage("데이터 로드 오류", "게시글 목록을 불러오는 데 실패했습니다.");
+                }
+            });
+        };
+
+        /**
+         * 게시글 리스너를 해지하고 로컬 게시글 목록을 초기화합니다.
+         */
+        const unsubscribePostsListener = () => {
+            if (postsListenerUnsubscribe) {
+                postsListenerUnsubscribe(); // 리스너 구독 해지
+                postsListenerUnsubscribe = null;
+                console.log("Posts listener unsubscribed and posts cleared.");
+            }
+        };
+
+        /**
+         * Firebase 인증 상태 변경 리스너 설정
+         * 인증 상태에 따라 게시글 리스너를 구독/해지합니다.
+         */
+         onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                userName = user.displayName || await fetchUserNameByUid(user.uid);
+                if (userName.startsWith('UID:')) {
+                
+                    // 사용자 이름이 아직 설정되지 않았으면 다시 로그인 페이지로 돌려보내거나 닉네임 설정 유도 (여기서는 기본값 유지)
+                    userName = user.displayName || '이름 없음';
+                }
+                
+                // [삭제됨]: if (!postsListenerUnsubscribe) { ... } 리스너 구독 로직이 제거되었습니다.
+
+            } else {
+            
+                userId = null;
+                userName = '로그인 필요';
+                
+                // [삭제됨]: unsubscribePostsListener(); 로그아웃 시 리스너 해지 로직이 제거되었습니다.
+            }
+            isAuthReady = true;
+            renderHeader(); // 헤더 업데이트
+            renderApp(); // 뷰 업데이트
+        });
+        /**
+         * 사용자 로그아웃 처리
+         */
+        const handleLogout = async () => {
+            if (await showMessage("로그아웃", "정말로 로그아웃 하시겠습니까?", true)) {
+                try {
+                    await signOut(auth);
+                    showMessage("로그아웃 성공", "로그아웃 되었습니다. 로그인 페이지로 이동합니다.");
+                    navigateTo('login');
+                } catch (error) {
+                    console.error("로그아웃 실패:", error);
+                    showMessage("오류", "로그아웃 중 오류가 발생했습니다.");
+                }
+            }
+        };
+
+        // --- 게시판 CRUD 작업 ---
+
+        /**
+         * 새 게시글을 추가하거나 기존 게시글을 수정합니다.
+         */
+        const savePost = async (postData, postId = null, file = null) => {
+            if (!userId) {
+                return showMessage("권한 없음", "글을 작성하거나 수정하려면 로그인해야 합니다.");
+            }
+
+            const now = new Date();
+            let fileMetadata = postData.fileMetadata || null;
+            let existingPost = null;
+
+            if (postId) {
+                existingPost = posts.find(p => p.id === postId);
+                if (existingPost && existingPost.authorId !== userId) {
+                    return showMessage("권한 없음", "이 글을 수정할 권한이 없습니다.");
+                }
+            }
+
+
+            try {
+                if (postId) {
+                    // 글 수정
+                    await updateDoc(doc(db, POSTS_COLLECTION_PATH, postId), {
+                        title: postData.title,
+                        content: postData.content,
+                        fileMetadata: fileMetadata, // 새 메타데이터로 덮어쓰기 (없으면 null)
+                        updatedAt: now,
+                        likes: 0,
+                    });
+                    showMessage("수정 완료", "게시글이 성공적으로 수정되었습니다. 좋아요/조회수가 초기화되었습니다.");
+                } else {
+                    // 새 글 생성
+                    await addDoc(collection(db, POSTS_COLLECTION_PATH), {
+                        title: postData.title,
+                        content: postData.content,
+                        authorId: userId,
+                        authorName: userName,
+                        createdAt: now,
+                        updatedAt: now,
+                        likes: 0,
+                        likedBy: [],
+                    });
+                    showMessage("작성 완료", "새 게시글이 성공적으로 등록되었습니다.");
+                }
+                navigateTo('board');
+            } catch (error) {
+                console.error("게시글 저장 실패:", error);
+                showMessage("오류", `게시글 저장 중 오류가 발생했습니다: ${error.message}`);
+            }
+        };
+
+        /**
+         * 게시글을 삭제합니다.
+         */
+        const deletePost = async (postId) => {
+            const postToDelete = posts.find(p => p.id === postId);
+
+            if (!postToDelete || postToDelete.authorId !== userId) {
+                return showMessage("권한 없음", "이 글을 삭제할 권한이 없거나 글을 찾을 수 없습니다.");
+            }
+
+            if (await showMessage("삭제 확인", "정말로 이 게시글을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.", true)) {
+                try {
+                    await deleteDoc(doc(db, POSTS_COLLECTION_PATH, postId));
+                    showMessage("삭제 완료", "게시글이 성공적으로 삭제되었습니다.");
+                    navigateTo('board');
+                } catch (error) {
+                    console.error("게시글 삭제 실패:", error);
+                    showMessage("오류", `게시글 삭제 중 오류가 발생했습니다: ${error.message}`);
+                }
+            }
+        };
+
+        /**
+         * 게시글의 좋아요 수를 증가시킵니다.
+         */
+         const toggleLike = async (postId) => {
+            if (!userId) {
+                return showMessage("로그인 필요", "좋아요를 누르려면 로그인해야 합니다.");
+            }
+
+            // 현재 게시글 데이터를 로컬 'posts' 배열에서 가져옵니다.
+            const post = posts.find(p => p.id === postId);
+            if (!post) {
+                return showMessage("오류", "게시글을 찾을 수 없습니다.");
+            }
+
+            // 'likedBy' 필드가 없거나 null일 경우 빈 배열로 초기화합니다.
+            const likedBy = post.likedBy || [];
+            const currentLikes = post.likes || 0;
+            
+            let newLikes;
+            let newLikedBy;
+
+            const userIndex = likedBy.indexOf(userId);
+
+            if (userIndex > -1) {
+                // 1. 이미 좋아요를 누른 경우 (취소)
+                newLikedBy = likedBy.filter(uid => uid !== userId); // 배열에서 사용자 ID 제거
+                newLikes = Math.max(0, currentLikes - 1); // 0 미만으로 내려가지 않도록
+            } else {
+                // 2. 좋아요를 누르지 않은 경우 (추가)
+                newLikedBy = [...likedBy, userId]; // 배열에 사용자 ID 추가
+                newLikes = currentLikes + 1;
+            }
+
+            try {
+                // Firestore 업데이트
+                await updateDoc(doc(db, POSTS_COLLECTION_PATH, postId), {
+                    likes: newLikes,
+                    likedBy: newLikedBy // 좋아요 누른 사람 목록(배열) 업데이트
+                });
+            } catch (error) {
+                console.error("좋아요 업데이트 실패:", error);
+                showMessage("오류", "좋아요 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+            }
+            // onSnapshot이 UI를 자동으로 업데이트하므로 별도 UI 처리가 필요 없습니다.
+        };
+
+        // --- 뷰 렌더링 및 라우팅 ---
+
+        const navigateTo = (viewName, id = null) => {
+            currentView = viewName;
+            currentPostId = id;
+            document.getElementById('fixed-bottom-actions').classList.add('hidden'); // 모든 이동 시 하단 버튼 초기 숨김
+
+            let hash = `#${viewName}`;
+            if (id) {
+                hash = `#${viewName}/${id}`;
+            } else if (viewName === 'board') {
+                hash = '';
+            }
+            window.location.hash = hash;
+            renderApp();
+        };
+        
+
+        window.onhashchange = () => {
+            const hash = window.location.hash.substring(1);
+            if (!hash || hash === 'board') {
+                navigateTo('board');
+            } else if (hash === 'create') {
+                navigateTo('create');
+            } else if (hash === 'login') {
+                navigateTo('login');
+            } else if (hash === 'signup') {
+                navigateTo('signup');
+            } else if (hash.startsWith('detail/')) {
+                const id = hash.split('/')[1];
+                navigateTo('detail', id);
+            } else if (hash.startsWith('edit/')) {
+                 const id = hash.split('/')[1];
+                 navigateTo('edit', id);
+            }
+        };
+
+        const renderHeader = () => {
+            const headerContainer = document.getElementById('header-container');
+            const authButtonText = userId ? '로그아웃' : '로그인';
+            const authAction = userId ? 'handleLogout()' : "navigateTo('login')";
+
+            // 템플릿 이미지에 맞춰 헤더 스타일을 더 깔끔하게 변경
+            headerContainer.innerHTML = `
+                <div class="container mx-auto max-w-6xl h-full flex items-center justify-between px-4 sm:px-6">
+                    <!-- 로고/동아리 이름 (BITCODING) -->
+                    <div class="flex items-center space-x-2 cursor-pointer" onclick="navigateTo('board')">
+                        <span class="text-xl font-bold text-gray-800">B</span>
+                        <span class="text-xl font-bold text-blue-600">BITCODING</span>
+                    </div>
+
+                    <!-- 빠른 메뉴 -->
+                    <nav class="flex items-center space-x-6 text-sm font-medium">
+                        <a href="#board" onclick="navigateTo('board')" class="text-gray-800 hover:text-blue-600 transition">커뮤니티</a>
+                        <a href="#" class="text-gray-800 hover:text-blue-600 transition hidden sm:block">동아리 소개</a>
+                        <a href="#" class="text-gray-800 hover:text-blue-600 transition">프로젝트</a>
+
+                        <!-- 로그인/로그아웃 버튼 -->
+                        <button onclick="${authAction}" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition shadow-md">
+                            ${authButtonText}
+                        </button>
+                    </nav>
+                </div>
+            `;
+        };
+
+        const renderLogin = () => {
+            document.getElementById('app').innerHTML = `
+                <div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-2xl mt-12">
+                    <h1 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">로그인</h1>
+                    <form id="login-form" class="space-y-4">
+                        <div>
+                            <label for="login-email" class="block text-sm font-medium text-gray-700">ID (이메일)</label>
+                            <input type="email" id="login-email" placeholder="이메일 주소"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
+                        </div>
+                        <div>
+                            <label for="login-password" class="block text-sm font-medium text-gray-700">비밀번호</label>
+                            <input type="password" id="login-password" placeholder="비밀번호"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
+                        </div>
+                        <button type="submit" class="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold shadow-md">
+                            로그인
+                        </button>
+                    </form>
+                    <div class="mt-6 pt-4 border-t text-center">
+                        <p class="text-gray-600 mb-2">계정이 없으신가요?</p>
+                        <button onclick="navigateTo('signup')" class="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-semibold shadow-md">
+                            회원 가입
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('login-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    showMessage("로그인 성공", "게시판으로 이동합니다.");
+                    navigateTo('board');
+                } catch (error) {
+                    console.error("로그인 실패:", error);
+                    let errorMessage = "로그인에 실패했습니다. 이메일 또는 비밀번호를 확인해주세요.";
+                    if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') errorMessage = "등록되지 않은 사용자이거나 잘못된 비밀번호입니다.";
+                    if (error.code === 'auth/wrong-password') errorMessage = "비밀번호가 일치하지 않습니다.";
+                    showMessage("로그인 오류", errorMessage);
+                }
+            };
+        };
+
+        const renderSignup = () => {
+            document.getElementById('app').innerHTML = `
+                <div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-2xl mt-12">
+                    <h1 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">회원 가입</h1>
+                    <form id="signup-form" class="space-y-4">
+                        <div>
+                            <label for="signup-username" class="block text-sm font-medium text-gray-700">사용자 이름</label>
+                            <input type="text" id="signup-username" placeholder="게시판에 표시될 이름"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
+                        </div>
+                        <div>
+                            <label for="signup-email" class="block text-sm font-medium text-gray-700">ID (이메일)</label>
+                            <input type="email" id="signup-email" placeholder="로그인에 사용할 이메일"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
+                        </div>
+                        <div>
+                            <label for="signup-password" class="block text-sm font-medium text-gray-700">비밀번호</label>
+                            <input type="password" id="signup-password" placeholder="6자리 이상 입력" minlength="6"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
+                        </div>
+                        <div>
+                            <label for="signup-confirm-password" class="block text-sm font-medium text-gray-700">비밀번호 확인</label>
+                            <input type="password" id="signup-confirm-password" placeholder="비밀번호를 다시 입력하세요"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
+                        </div>
+                        <button type="submit" class="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold shadow-md">
+                            회원 가입 완료
+                        </button>
+                    </form>
+                    <div class="mt-6 pt-4 border-t text-center">
+                        <button onclick="navigateTo('login')" class="text-indigo-600 hover:text-indigo-800 transition">
+                            이미 계정이 있으신가요? 로그인하기
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('signup-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('signup-username').value.trim();
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                const confirmPassword = document.getElementById('signup-confirm-password').value;
+                
+                const isUnique = await isUsernameUnique(username);
+                if (!isUnique) {
+                    return showMessage('회원가입 실패: 입력하신 사용자 이름은 이미 사용 중입니다.');
+                }
+
+                if (password !== confirmPassword) {
+                    return showMessage("가입 오류", "비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+                }
+
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+                    
+                    await updateProfile(user, { displayName: username });
+
+                    await setDoc(doc(db, USERS_COLLECTION_PATH, user.uid), {
+                        username: username,
+                        email: email,
+                        createdAt: serverTimestamp()
+                    });
+
+                    // 1. Auth 프로필에 표시 이름 업데이트
+                    /*
+                    await updateProfile(user, { displayName: username });
+
+                    // 2. Firestore에 사용자 메타데이터 저장
+                    await saveUserMetadata(user.uid, username);*/
+
+                    showMessage("회원가입 성공", "성공적으로 가입되었습니다. 로그인 페이지로 이동합니다.");
+                    navigateTo('login');
+                } catch (error) {
+                    console.error("회원가입 실패:", error);
+                    let errorMessage = "회원가입에 실패했습니다.";
+                    if (error.code === 'auth/email-already-in-use') errorMessage = "이미 사용 중인 이메일(ID)입니다.";
+                    if (error.code === 'auth/invalid-email') errorMessage = "유효하지 않은 이메일 형식입니다.";
+                    if (error.code === 'auth/weak-password') errorMessage = "비밀번호는 6자리 이상이어야 합니다.";
+                    showMessage("회원가입 오류", errorMessage);
+                }
+            };
+        };
+
+        const renderBoard = () => {
+            document.getElementById('fixed-bottom-actions').classList.remove('hidden');
+            const buttonHtml = userId ? `
+                <button id="create-post-btn" class="w-11/12 sm:w-1/2 md:w-1/3 px-5 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow-lg transform hover:scale-[1.02]">
+                    <svg class="w-5 h-5 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zm-3.109 2.012l-6.29 6.29a1 1 0 00-.293.707v3h3a1 1 0 00.707-.293l6.29-6.29-3.107-3.107z"/></svg>
+                    글 작성
+                </button>
+            ` : `<p class="text-gray-500">글 작성을 위해 로그인해주세요.</p>`;
+
+            document.getElementById('fixed-bottom-actions').innerHTML = buttonHtml;
+
+            let listHtml = '';
+            if (posts.length === 0) {
+                listHtml = `<div class="text-center py-10 text-gray-500 bg-white rounded-xl shadow-lg mt-6">등록된 게시글이 없습니다. 첫 게시글을 작성해보세요!</div>`;
+            } else {
+                listHtml = `
+                    <div class="overflow-x-auto bg-white rounded-xl shadow-lg mt-6">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">번호</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">제목</th>
+                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24 sm:w-32">작성자</th>
+                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-28 sm:w-40">날짜</th>
+                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16 sm:w-20">좋아요</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${posts.map((post, index) => {
+                                    const isEdited = post.createdAt && post.updatedAt && (post.createdAt.seconds < post.updatedAt.seconds - 1); 
+                                    const editedTag = isEdited ? `<span class="text-xs text-gray-400 ml-1">(수정됨)</span>` : '';
+                                    
+                                    const displayDate = post.updatedAt ? post.updatedAt : post.createdAt;
+
+                                    return `
+                                        <tr class="board-row transition-colors" data-id="${post.id}">
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-center font-medium text-gray-500">${posts.length - index}</td>
+                                            <td class="px-6 py-3 text-sm text-gray-900 truncate max-w-xs sm:max-w-none">
+                                                <span class="font-semibold text-indigo-600">${post.title}</span>
+                                                ${editedTag}
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-600">${post.authorName}</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-500">${formatDate(displayDate)}</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-center text-red-500 font-semibold">${post.likes || 0}</td>
+                                            </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            document.getElementById('app').innerHTML = `
+                <div class="mb-6 flex justify-between items-center">
+                    <h1 class="text-3xl font-extrabold text-gray-900">자유 게시판</h1>
+                </div>
+                ${listHtml}
+                <div class="mt-6 text-sm text-gray-500 p-2 border-t pt-4">
+                    현재 사용자: <span class="font-mono text-gray-700 break-all">${userName}</span>
+                </div>
+            `;
+
+            // 이벤트 리스너 연결
+            if (userId) {
+                document.getElementById('create-post-btn').onclick = () => navigateTo('create');
+            }
+            document.querySelectorAll('.board-row').forEach(row => {
+                row.onclick = (e) => {
+                    const postId = e.currentTarget.dataset.id;
+                    navigateTo('detail', postId);
+                };
+            });
+        };
+
+        const renderPostDetail = () => {
+            // [변경] 하단 버튼 바를 숨기지 않고 '표시'합니다.
+            document.getElementById('fixed-bottom-actions').classList.remove('hidden');
+            
+            const postId = currentPostId;
+            const post = posts.find(p => p.id === postId);
+            
+            if (!post) {
+                // [변경] 글이 없을 때도 하단 바는 숨깁니다.
+                document.getElementById('fixed-bottom-actions').classList.add('hidden');
+                document.getElementById('app').innerHTML = `
+                    <div class="text-center py-10 text-red-500 bg-white rounded-xl shadow-lg">
+                        <h2 class="text-2xl font-bold mb-4">404 - 글을 찾을 수 없습니다</h2>
+                        <button onclick="navigateTo('board')" class="mt-4 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                            게시판으로 돌아가기
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            const isAuthor = userId && post.authorId === userId;
+
+
+            // [추가] 좋아요 로직을 위한 변수 선언 (likedBy 배열 확인)
+            const hasLiked = post.likedBy && post.likedBy.includes(userId);
+            const likeButtonClass = hasLiked 
+                ? 'bg-pink-600 hover:bg-pink-700' // 좋아요 누른 상태
+                : 'bg-blue-600 hover:bg-blue-700'; // 기본 상태
+            const likeButtonText = hasLiked ? '좋아요 취소' : '좋아요';
+
+            // [변경] app.innerHTML 에서는 '좋아요'와 '목록' 버튼 삭제
+            document.getElementById('app').innerHTML = `
+                <div class="max-w-5xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+                    <div class="border-b pb-4 mb-4">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                             <h1 class="text-3xl font-extrabold text-gray-900 mb-2 sm:mb-0">${post.title}</h1>
+                             ${isAuthor ?
+                            `
+                                <div class="space-x-2 flex mt-2 sm:mt-0">
+                                    <button onclick="navigateTo('edit', '${postId}')" class="px-3 py-1 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition shadow-md">
+                                        수정
+                                    </button>
+                                    <button id="delete-post-btn" class="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition shadow-md">
+                                        삭제
+                                    </button>
+                                </div>
+                             ` : ''}
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">
+                             작성자: <span class="font-semibold text-gray-700">${post.authorName}</span>
+                            <span class="mx-2">|</span>
+                            작성일: ${formatDate(post.createdAt)}
+                            ${post.updatedAt && post.createdAt.toMillis() !== post.updatedAt.toMillis() ?
+                            `(수정됨: ${formatDate(post.updatedAt)})` : ''}
+                        </p>
+                        <div class="flex space-x-4 text-sm mt-2 text-gray-500">
+                             <span>좋아요: <span id="like-count-text" class="font-semibold text-red-500">${post.likes || 0}</span></span>
+                        </div>
+                    </div>
+
+                    <div class="prose max-w-none text-gray-700 mb-8 leading-relaxed whitespace-pre-wrap break-words">
+                        ${post.content.replace(/\n/g, '<br>')}
+                    </div>
+            `;
+            
+            // [추가] 하단 고정 버튼 바(fixed-bottom-actions)의 내용을 동적으로 설정
+            document.getElementById('fixed-bottom-actions').innerHTML = `
+                <div class="flex justify-center items-center space-x-3 w-full max-w-xl mx-auto px-4">
+                    <button onclick="navigateTo('board')" class="w-auto px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition shadow-md font-semibold">
+                        목록으로
+                    </button>
+                    
+                    <button id="like-btn" class="w-auto flex items-center justify-center px-6 py-3 ${likeButtonClass} text-white rounded-lg transition shadow-lg font-semibold ${userId ? '' : 'opacity-50 cursor-not-allowed'}" ${userId ? '' : 'disabled'}>
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true"><path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.167a1.5 1.5 0 001.5 1.5h5.5a1.5 1.5 0 001.415-1.064l1.372-4.803a1.5 1.5 0 00-1.415-1.936H12V6.5a1.5 1.5 0 00-1.5-1.5h-1a1.5 1.5 0 00-1.5 1.5v3.833H6z"></path></svg>
+                        <span id="like-count-display">${likeButtonText} (${post.likes || 0})</span>
+                    </button>
+                </div>
+            `;
+
+            if (userId) {
+                document.getElementById('like-btn').onclick = () => toggleLike(postId);
+            } else {
+                likeButton.onclick = () => {
+                    alert('좋아요 기능은 로그인 후 이용 가능합니다.');
+                    navigateTo('login');
+                };
+            }
+            if (isAuthor) {
+                document.getElementById('delete-post-btn').onclick = () => deletePost(postId);
+            }
+        };
+         
+
+        const renderPostForm = () => {
+            if (!userId) {
+                return navigateTo('login');
+            }
+
+            document.getElementById('fixed-bottom-actions').classList.remove('hidden');
+            const isEdit = currentView === 'edit';
+            const postId = currentPostId;
+            let post = { title: '', content: '', fileMetadata: null };
+
+            if (isEdit) {
+                post = posts.find(p => p.id === postId);
+                if (!post || post.authorId !== userId) {
+                    showMessage("권한 없음", "이 글을 수정할 권한이 없습니다.");
+                    navigateTo('board');
+                    return;
+                }
+            }
+
+            document.getElementById('fixed-bottom-actions').innerHTML = `
+                <div class="flex justify-center space-x-3 w-full p-3 max-w-4xl">
+                    <button type="button" onclick="navigateTo('${isEdit ? 'detail/' + postId : 'board'}')"
+                        class="w-1/3 sm:w-1/4 px-5 py-3 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition shadow-md">
+                        취소
+                    </button>
+                    <button type="submit" form="post-form"
+                        class="w-1/3 sm:w-1/4 px-5 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow-lg">
+                        ${isEdit ? '수정 완료' : '등록'}
+                    </button>
+                </div>
+            `;
+
+            const existingFileDisplay = post.fileMetadata ? `
+                <p class="text-sm text-gray-600 mt-2">
+                    현재 첨부 파일: <span class="font-semibold">${post.fileMetadata.fileName}</span>
+                    (${isEdit ? '새 파일 첨부 시 기존 파일은 삭제됩니다.' : ''})
+                </p>
+            ` : '';
+
+            document.getElementById('app').innerHTML = `
+                <div class="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg mb-16">
+                    <h1 class="text-3xl font-extrabold text-gray-900 mb-6">${isEdit ? '게시글 수정' : '새 게시글 작성'}</h1>
+
+                    <form id="post-form" class="space-y-6">
+                        <div>
+                            <label for="post-title" class="block text-sm font-medium text-gray-700 mb-1">제목</label>
+                            <input type="text" id="post-title" value="${post.title}" placeholder="제목을 입력하세요."
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition" required>
+                        </div>
+                        <div>
+                            <label for="post-content" class="block text-sm font-medium text-gray-700 mb-1">내용</label>
+                            <textarea id="post-content" rows="15" placeholder="내용을 입력하세요."
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition" required>${post.content}</textarea>
+                        </div>
+                    </form>
+                </div>
+            `;
+
+            document.getElementById('post-form').onsubmit = (e) => {
+                e.preventDefault();
+                const title = document.getElementById('post-title').value.trim();
+                const content = document.getElementById('post-content').value.trim();
+                if (!title || !content) {
+                    return showMessage("입력 오류", "제목과 내용을 모두 입력해야 합니다.");
+                }
+                    savePost({ title, content, fileMetadata: null }, isEdit ? postId : null, null);
+            };
+        };
+
+        function renderApp()  {
+            if (!isAuthReady) return; // 인증 준비 중일 때는 아무것도 하지 않음
+
+            // 로그인 상태가 아니면 무조건 로그인 페이지로
+
+            switch (currentView) {
+                case 'login':
+                    renderLogin();
+                    break;
+                case 'signup':
+                    renderSignup();
+                    break;
+                case 'board':
+                    renderBoard();
+                    break;
+                case 'detail':
+                    renderPostDetail();
+                    break;
+                case 'create':
+                case 'edit':
+                    if (!userId) {
+                        alert('글 작성/수정은 로그인 후 이용 가능합니다.');
+                        return navigateTo('login'); // 로그인 상태가 아니면 로그인으로 리다이렉트
+                    }
+                    renderPostForm();
+                    break;
+                default:
+                    navigateTo('board');
+                    break;
+            }
+        };
+
+        // --- 초기화 함수 ---
+        const init = () => {
+            renderHeader();
+
+            if (postsListenerUnsubscribe === null) {
+            postsListenerUnsubscribe = setupPostsListener();
+            }
+
+            window.onhashchange(); // 초기 로드 시 해시 체크
+            if (!window.location.hash) {
+                navigateTo('board'); // 초기 로드는 로그인 페이지로
+            }
+        };
+
+        // 전역으로 필요한 함수 노출 (HTML 인라인 이벤트 핸들러용)
+        window.navigateTo = navigateTo;
+        window.handleLogout = handleLogout; // 헤더에서 사용
+
+        // 애플리케이션 시작
+        window.onload = init;
+    </script>
+</body>
+</html>
